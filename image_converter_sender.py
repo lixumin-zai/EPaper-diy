@@ -12,7 +12,7 @@ IMAGE_SERVICE_UUID = "00FF"
 IMAGE_CHAR_UUID = "FF01"
 
 # 目标图像尺寸
-TARGET_WIDTH = 700
+TARGET_WIDTH = 300
 TARGET_HEIGHT = 396
 
 def convert_to_4bit_grayscale(image_path, target_width=TARGET_WIDTH, target_height=TARGET_HEIGHT):
@@ -96,7 +96,8 @@ async def send_image(device_address, image_data, width, height):
             
             # 发送第一个数据包（包含头信息）
             first_packet = header + image_bytes[:492]  # 500字节MTU - 8字节头信息
-            await client.write_gatt_char(target_char, first_packet)
+            # await client.write_gatt_char(target_char, first_packet, response=True)  # 添加response=True
+            await asyncio.sleep(5)
             print(f"已发送头信息和第一部分数据: {len(first_packet)} 字节")
             
             # 发送剩余数据
@@ -106,11 +107,11 @@ async def send_image(device_address, image_data, width, height):
             
             for i in range(0, len(remaining_data), chunk_size):
                 chunk = remaining_data[i:i+chunk_size]
-                await client.write_gatt_char(target_char, chunk)
+                # await client.write_gatt_char(target_char, chunk)
                 chunk_num = i // chunk_size + 1
                 print(f"已发送数据块 {chunk_num}/{total_chunks}: {len(chunk)} 字节")
                 # 添加短暂延迟，避免发送过快导致数据丢失
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(3)
             
             print(f"图像数据发送完成，总大小: {len(image_bytes) + len(header)} 字节")
             return True
